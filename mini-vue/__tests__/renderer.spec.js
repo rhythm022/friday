@@ -51,7 +51,7 @@ describe('renderer',()=>{
         document.body.appendChild(container)
        
 
-        createApp({
+        const app = createApp({
           data() {
             return {
               title: 'hello, mini-vue!'
@@ -63,6 +63,8 @@ describe('renderer',()=>{
           }
         }).mount('#app')
         expect(container.innerHTML).toBe('hello, mini-vue!')
+        app.title = 'update'
+        expect(container.innerHTML).toBe('update')
       });
 
       test('should support setup option', () => {

@@ -1,3 +1,6 @@
+import { reactive } from "./reactive"
+import { effect } from "./effect"
+
 export function createRenderer(options){
     const {querySelector,insert} = options
     function render(vnode,container){
@@ -6,7 +9,7 @@ export function createRenderer(options){
         }
 
         const __ctx = {}
-        __ctx.data = vnode.data ? vnode.data() : {} 
+        __ctx.data = vnode.data ? reactive(vnode.data()) : reactive({}) 
         __ctx.setupResult = vnode.setup ? vnode.setup(): {}
 
         const ctx = new Proxy({},{
@@ -19,12 +22,25 @@ export function createRenderer(options){
                     return __ctx.data[key]
                 }
             },
-            set(){}
+            set(target,key,value){
+                if(__ctx.setupResult[key] !== undefined){
+                    return __ctx.setupResult[key] = value
+                }
+    
+                if(__ctx.data[key] !== undefined){
+                    return __ctx.data[key] = value
+                }
+            }
         })
-        const el = vnode.render.call(ctx)
 
+        effect(()=>{
+            const el = vnode.render.call(ctx)
+            container.innerHTML = ''
+            insert(el,container)
+        })
+       
 
-        insert(el,container)
+        return ctx
     }
 
 
